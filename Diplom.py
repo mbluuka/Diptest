@@ -80,7 +80,7 @@ def get_common_password_info():
 
 
 def get_common_auth_info():
-    pam_cracklib_keyword = "pam_cracklib"
+    # Файл для проверки
     file_to_check = "/etc/pam.d/common-auth"
     parameter_info = []
     deny_value = None
@@ -88,33 +88,41 @@ def get_common_auth_info():
     try:
         with open(file_to_check, 'r') as f:
             for line in f:
-                # Проверяем наличие pam_cracklib в строке
-                if pam_cracklib_keyword in line:
-                    parameters = line.strip().split()[3:]
+                # Убираем пробелы и игнорируем пустые строки
+                stripped_line = line.strip()
+                if not stripped_line or stripped_line.startswith('#'):
+                    continue  # Пропустим пустые строки и комментарии
+
+                # Разделяем строку на части
+                parts = stripped_line.split()
+
+                # Проверяем, содержится ли pam_tally.so в строке
+                if 'pam_tally.so' in parts:
+                    for param in parts:
+                        if param.startswith('deny='):
+                            deny_value = param.split('=')[1]
+
+                # Проверяем наличие параметров pam_cracklib
+                if 'pam_cracklib' in parts:
+                    # Добавляем все параметры pam_cracklib
+                    parameters = parts[3:]  # Пропускаем первые три элемента
                     param_dict = {}
                     for param in parameters:
-                        key_value = param.split('=')
-                        if len(key_value) == 2:
+                        if '=' in param:
+                            key_value = param.split('=')
                             param_dict[key_value[0]] = key_value[1]
                     parameter_info.append(param_dict)
-
-                # Проверяем наличие deny в строке
-                if 'pam_tally.so' in line:
-                    parts = line.split()
-                    if 'deny' in parts:
-                        deny_index = parts.index('deny') + 1
-                        if deny_index < len(parts):
-                            deny_value = parts[deny_index]
 
     except Exception as e:
         return f"Ошибка при проверке файла {file_to_check}: {str(e)}"
 
-    # Добавим значение deny в список параметров
-    if deny_value:
+    # Добавляем значение deny в список параметров, если найдено
+    if deny_value is not None:
         parameter_info.append({'deny': deny_value})
 
     if parameter_info:
         return parameter_info
+    
     return "Шаблон pam_cracklib не найден в файле common-auth."
 
 
