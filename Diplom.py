@@ -83,10 +83,12 @@ def get_common_auth_info():
     pam_cracklib_keyword = "pam_cracklib"
     file_to_check = "/etc/pam.d/common-auth"
     parameter_info = []
+    deny_value = None
 
     try:
         with open(file_to_check, 'r') as f:
             for line in f:
+                # Проверяем наличие pam_cracklib в строке
                 if pam_cracklib_keyword in line:
                     parameters = line.strip().split()[3:]
                     param_dict = {}
@@ -95,8 +97,21 @@ def get_common_auth_info():
                         if len(key_value) == 2:
                             param_dict[key_value[0]] = key_value[1]
                     parameter_info.append(param_dict)
+
+                # Проверяем наличие deny в строке
+                if 'pam_tally.so' in line:
+                    parts = line.split()
+                    if 'deny' in parts:
+                        deny_index = parts.index('deny') + 1
+                        if deny_index < len(parts):
+                            deny_value = parts[deny_index]
+
     except Exception as e:
         return f"Ошибка при проверке файла {file_to_check}: {str(e)}"
+
+    # Добавим значение deny в список параметров
+    if deny_value:
+        parameter_info.append({'deny': deny_value})
 
     if parameter_info:
         return parameter_info
