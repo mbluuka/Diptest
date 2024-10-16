@@ -25,8 +25,7 @@ def get_login_defs():
     except Exception as e:
         return f"Возникла ошибка во время чтения файла login.defs: {str(e)}"
 
-    return login_defs_info  # Исправлено: возвращается правильная переменная
-
+    return login_defs_info
 
 # Функция для чтения конфигурационного файла о смене пароля
 def get_chage_info(username):
@@ -35,7 +34,6 @@ def get_chage_info(username):
         return parse_chage_info(output.strip())
     except subprocess.CalledProcessError:
         return "Ошибка при получении информации о пароле."
-
 
 def parse_chage_info(chage_output):
     chage_info = {}
@@ -46,14 +44,12 @@ def parse_chage_info(chage_output):
             chage_info[key.strip()] = value.strip()  # Убираем пробелы
     return chage_info
 
-
 def get_firewall_info():
     try:
         output = subprocess.check_output(['iptables', '-L'], stderr=subprocess.STDOUT, universal_newlines=True)
         return output.strip()
     except subprocess.CalledProcessError:
         return "Ошибка при получении информации о файерволе."
-
 
 def get_common_password_info():
     pam_cracklib_keyword = "pam_cracklib"
@@ -78,9 +74,7 @@ def get_common_password_info():
         return parameter_info
     return "Шаблон pam_cracklib не найден в файле common-password."
 
-
 def get_common_auth_info():
-    # Файл для проверки
     file_to_check = "/etc/pam.d/common-auth"
     parameter_info = []
     deny_value = None
@@ -88,23 +82,20 @@ def get_common_auth_info():
     try:
         with open(file_to_check, 'r') as f:
             for line in f:
-                # Убираем пробелы и игнорируем пустые строки
                 stripped_line = line.strip()
                 if not stripped_line or stripped_line.startswith('#'):
-                    continue  # Пропустим пустые строки и комментарии
+                    continue
 
-                # Разделяем строку на части
                 parts = stripped_line.split()
 
-                # Проверяем, содержится ли pam_tally.so в строке
+                # Проверяем pam_tally.so и извлекаем deny
                 if 'pam_tally.so' in parts:
                     for param in parts:
                         if param.startswith('deny='):
                             deny_value = param.split('=')[1]
 
-                # Проверяем наличие параметров pam_cracklib
+                # Проверяем параметры pam_cracklib
                 if 'pam_cracklib' in parts:
-                    # Добавляем все параметры pam_cracklib
                     parameters = parts[3:]  # Пропускаем первые три элемента
                     param_dict = {}
                     for param in parameters:
@@ -116,7 +107,6 @@ def get_common_auth_info():
     except Exception as e:
         return f"Ошибка при проверке файла {file_to_check}: {str(e)}"
 
-    # Добавляем значение deny в список параметров, если найдено
     if deny_value is not None:
         parameter_info.append({'deny': deny_value})
 
@@ -125,24 +115,23 @@ def get_common_auth_info():
     
     return "Шаблон pam_cracklib не найден в файле common-auth."
 
-
 def export_to_json(data, filename):
     with open(filename, 'w') as json_file:
         json.dump(data, json_file, ensure_ascii=False, indent=4)
-
 
 if __name__ == "__main__":
 
     pam_password_info = get_common_password_info()
     pam_auth_info = get_common_auth_info()
-
     login_defs_info = get_login_defs()
 
-    if isinstance(login_defs_info, list):
+    # Для более структурированного вывода login_defs
+    if isinstance(login_defs_info, dict) and login_defs_info:
         print("\nНайдены параметры в login_defs:")
-        for params in login_defs_info:
-            for key, value in params.items():
-                print(f"{key}: {value}")
+        for key, value in login_defs_info.items():
+            print(f"{key}: {value}")
+    else:
+        print("\nНе удалось найти параметры в login_defs или файл пуст.")
 
     if isinstance(pam_password_info, list):
         print("\nНайдены параметры pam_cracklib в common-password:")
