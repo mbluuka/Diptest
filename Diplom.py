@@ -138,10 +138,14 @@ if __name__ == "__main__":
 
     login_defs_info = get_login_defs()
 
-    print("\n")
+    if isinstance(login_defs_info, list):
+        print("\nНайдены параметры в login_defs:")
+        for params in login_defs_info:
+            for key, value in params.items():
+                print(f"{key}: {value}")
 
     if isinstance(pam_password_info, list):
-        print("Найдены параметры pam_cracklib в common-password:")
+        print("\nНайдены параметры pam_cracklib в common-password:")
         for params in pam_password_info:
             for key, value in params.items():
                 print(f"{key}: {value}")
@@ -149,14 +153,12 @@ if __name__ == "__main__":
         print(pam_password_info)
 
     if isinstance(pam_auth_info, list):
-        print("Найдены параметры pam_cracklib в common-auth:")
+        print("\nНайдены параметры pam_cracklib в common-auth:")
         for params in pam_auth_info:
             for key, value in params.items():
                 print(f"{key}: {value}")
     else:
         print(pam_auth_info)
-
-    print("\n")
 
     # Экспортируем данные в JSON
     export_to_json({
