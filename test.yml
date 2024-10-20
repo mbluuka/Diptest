@@ -1,7 +1,8 @@
 ---
 - name: Получение параметров из login.defs
-  hosts: remote_machines
-  gather_facts: no
+  hosts: all
+  become: true
+  gather_facts: false
   tasks:
 
     - name: Чтение файла /etc/login.defs
