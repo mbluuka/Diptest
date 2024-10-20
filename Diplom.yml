@@ -1,8 +1,6 @@
 ---
 - name: Data collection from VM
   hosts: all
-  become: true
-  gather_facts: false
   tasks:
   
     - name: Get paramete rs from /etc/login.defs
