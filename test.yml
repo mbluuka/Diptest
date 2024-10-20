@@ -2,6 +2,7 @@
 - name: Получение параметров из login.defs
   hosts: all
   become: true
+  become_method: sudo
   gather_facts: false
   tasks:
 

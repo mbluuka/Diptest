@@ -1,10 +1,9 @@
 ---
 - name: Data collection from VM
   hosts: all
-  gather_facts: true
   tasks:
   
-    - name: Get parametrs from /etc/login.defs
+    - name: Get paramete rs from /etc/login.defs
       slurp:
         src: /etc/login.defs
       register: login_defs_raw
