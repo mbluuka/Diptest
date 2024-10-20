@@ -21,6 +21,8 @@ def get_login_defs():
                     login_defs_info['PASS_WARN_AGE'] = line.split()[1]
                 elif line.startswith('LOGIN_RETRIES'):
                     login_defs_info['LOGIN_RETRIES'] = line.split()[1]
+                elif line.startswith('LOGIN_TIMEOUT'):
+                    login_defs_info['LOGIN_TIMEOUT'] = line.split()[1]
 
     except Exception as e:
         return f"Возникла ошибка во время чтения файла login.defs: {str(e)}"
